@@ -95,7 +95,7 @@ func wsHandler(res http.ResponseWriter, req *http.Request) {
 func main() {
 	// Register turbo handler
 	http.HandleFunc("/ws", wsHandler)
-	http.HandleFunc("/yo", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/flappyo", func(w http.ResponseWriter, r *http.Request) {
 		yo := Yo{}
 		yo.from = "test"
 		hub.yo <- &yo
