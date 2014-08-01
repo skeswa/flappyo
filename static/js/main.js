@@ -78,8 +78,13 @@ $(document).ready(function() {
       isWsOpen = false;
    };
    ws.onmessage = function(evt) {
-      console.log('YO');
+      var msg = JSON.parse(evt.data);
+      toastr.success('Yo from "' + msg.from + '"');
+      // TODO: multiple screen clicks
+      if(currentstate == states.ScoreScreen) $("#replay").click();
       screenClick();
+      //setTimeout(screenClick, 400);
+      //setTimeout(screenClick, 800);
    };
    //start with the splash screen
    showSplash();

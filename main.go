@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
+	"encoding/json"
 )
 
 type Hub struct {
@@ -16,7 +17,7 @@ type Hub struct {
 }
 
 type Yo struct {
-	from string
+	From string `json:"from"`
 }
 
 type Conn struct {
@@ -35,7 +36,7 @@ var (
 		yo:          make(chan *Yo, 1024),
 		connections: make(map[*Conn]bool),
 	}
-	addr = flag.String("addr", ":3333", "http service address")
+	addr = flag.String("addr", ":80", "http service address")
 )
 
 func (conn *Conn) write() {
@@ -64,15 +65,20 @@ func (hub *Hub) run() {
 			close(conn.outbox)
 			conn.ws.Close()
 		case yo := <-hub.yo:
-			log.Println("yo", yo.from)
-			go hub.notify()
+			log.Println("yo", yo.From)
+			go hub.notify(yo)
 		}
 	}
 }
 
-func (hub *Hub) notify() {
-	for conn, _ := range hub.connections {
-		conn.outbox <- []byte("yo")
+func (hub *Hub) notify(yo *Yo) {
+	msg, err := json.Marshal(yo)
+	if err == nil {
+		for conn, _ := range hub.connections {
+			conn.outbox <- msg
+		}
+	} else {
+		log.Println("Could not marshal json:", err)
 	}
 }
 
@@ -97,10 +103,10 @@ func main() {
 	http.HandleFunc("/ws", wsHandler)
 	http.HandleFunc("/flappyo", func(w http.ResponseWriter, r *http.Request) {
 		yo := Yo{}
-		yo.from = "test"
+		yo.From = r.URL.Query().Get("username")
 		hub.yo <- &yo
-		log.Println("WAT")
-		fmt.Fprintf(w, "Hello")
+		log.Println("Flap!")
+		fmt.Fprintf(w, "Flap!")
 	})
 	// Register the static files
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
