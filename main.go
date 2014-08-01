@@ -115,7 +115,7 @@ func main() {
 	})
 	// Start the server
 	go hub.run()
-	log.Println("Server is now listening on 127.0.0.1:3333")
+	log.Println("Server is now listening on 0.0.0.0")
 	if err := http.ListenAndServe(*addr, nil); err != nil {
 		log.Fatal("Server could not start:", err)
 	}
